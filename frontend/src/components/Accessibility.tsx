@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 interface AccessibilityConfig {
   enableAnnouncements?: boolean;
   enableKeyboardNavigation?: boolean;
   enableFocusManagement?: boolean;
-  enableAriaLabels?: boolean;
 }
 
 export function useAccessibility(config: AccessibilityConfig = {}) {
@@ -14,7 +13,6 @@ export function useAccessibility(config: AccessibilityConfig = {}) {
     enableAnnouncements = true,
     enableKeyboardNavigation = true,
     enableFocusManagement = true,
-    enableAriaLabels = true,
   } = config;
 
   useEffect(() => {
@@ -198,8 +196,7 @@ export function AccessibleField({
           {description}
         </p>
       )}
-      
-      {React.cloneElement(children, {
+        {React.cloneElement(children as React.ReactElement<any>, {
         id,
         'aria-describedby': ariaDescribedBy,
         'aria-invalid': error ? 'true' : undefined,
