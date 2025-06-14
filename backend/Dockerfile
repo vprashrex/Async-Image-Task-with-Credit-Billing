@@ -45,9 +45,6 @@ COPY requirements.txt ./
 # Install dependencies using uv with --system flag
 RUN uv pip install --system -r requirements.txt
 
-# Copy environment file and rename it
-COPY .env.docker .env
-
 # Copy alembic configuration
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
@@ -55,6 +52,7 @@ COPY alembic/ ./alembic/
 # Copy application code
 COPY app/ ./app/
 COPY setup_database.py ./
+COPY docker-entrypoint.sh ./
 
 # Create uploads directory
 RUN mkdir -p /app/uploads/original /app/uploads/processed
@@ -63,8 +61,15 @@ RUN mkdir -p /app/uploads/original /app/uploads/processed
 RUN addgroup -g 1001 -S appgroup && \
     adduser -S appuser -u 1001 -G appgroup
 
-# Change ownership of app directory
-RUN chown -R appuser:appgroup /app
+# Make entrypoint script executable
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Change ownership of app directory and make alembic executable
+RUN chown -R appuser:appgroup /app && \
+    chmod +x /root/.local/bin/alembic || true
+
+# Install alembic globally to ensure it's available
+RUN uv pip install --system alembic
 
 # Switch to non-root user
 USER appuser
@@ -77,4 +82,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Default command (can be overridden in docker-compose)
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

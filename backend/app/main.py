@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+#from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import engine, Base
 from app.routes import auth, tasks, credits, admin
-from app.utils.database_setup import setup_database
+#from app.utils.database_setup import setup_database
 import os
 import logging
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 # Configure logging
 logging.basicConfig(
@@ -16,14 +19,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-try:
-    # Try to setup database using Alembic migrations
-    from app.utils.database_setup import setup_database
-    setup_database()
-    logger.info("✅ Database setup completed using Alembic")
-except Exception as e:
-    logger.error(f"⚠️  Database setup failed: {e}")
-    logger.error("📝 Please check your DATABASE_URL and ensure PostgreSQL is running")
+# try:
+#     # Try to setup database using Alembic migrations
+#     from app.utils.database_setup import setup_database
+#     setup_database()
+#     logger.info("✅ Database setup completed using Alembic")
+# except Exception as e:
+#     logger.error(f"⚠️  Database setup failed: {e}")
+#     logger.error("📝 Please check your DATABASE_URL and ensure PostgreSQL is running")
 
 # Create FastAPI app
 app = FastAPI(
@@ -70,10 +73,18 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+# Favicon endpoint to prevent 404 errors
+@app.get("/favicon.ico")
+async def favicon():
+    return JSONResponse(status_code=204, content=None)
+
 # Exception handlers
 @app.exception_handler(404)
-async def not_found_handler(request, exc):
-    return HTTPException(status_code=404, detail="Endpoint not found")
+async def not_found_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "Endpoint not found"}
+    )
 
 if __name__ == "__main__":
     import uvicorn

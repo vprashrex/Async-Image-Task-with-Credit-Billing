@@ -58,9 +58,16 @@ class Settings(BaseSettings):
         "ENVIRONMENT", "development"
     )  # Add environment detection
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "Virtual Space Tech Backend"  # CORS - More restrictive defaults
+    PROJECT_NAME: str = "Virtual Space Tech Backend"    # CORS - More restrictive defaults
+    BACKEND_CORS_ORIGINS: List[str] = Field(default_factory=lambda: [])
     
-    BACKEND_CORS_ORIGINS: List[str] = os.getenv("BACKEND_CORS_ORIGINS")
+    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        elif isinstance(v, list):
+            return v
+        return []
 
     # Security Settings
 
