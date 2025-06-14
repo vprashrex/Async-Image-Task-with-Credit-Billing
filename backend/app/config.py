@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
     CELERY_RESULT_BACKEND: str = os.getenv(
         "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
-    )    # File Storage - Enhanced security
+    )
     UPLOAD_DIR: str = "./uploads"
     MAX_FILE_SIZE: int = 10485760  # 10MB
     ALLOWED_EXTENSIONS: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
@@ -37,24 +37,27 @@ class Settings(BaseSettings):
     DEBUG: bool = False  # Default to production mode
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")  # Add environment detection
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "Virtual Space Tech Backend"# CORS - More restrictive defaults
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000","http://localhost:3001"]
+    PROJECT_NAME: str = "Virtual Space Tech Backend"    # CORS - More restrictive defaults
+    BACKEND_CORS_ORIGINS: List[str] = os.getenv('BACKEND_CORS_ORIGINS')
 
     # Security Settings
     #WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""), min_length=20)
     WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""))
 
-      # Session Security - Development-friendly settings
-    SESSION_COOKIE_SECURE: bool = False  # Set to False for HTTP in development
+    # Session Security - Environment-aware settings for cross-origin support
+    SESSION_COOKIE_SECURE: bool = os.getenv("ENVIRONMENT", "development") == "production"
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SAMESITE: str = "lax"  # 'lax' for development, 'strict' for production
+    SESSION_COOKIE_SAMESITE: str = "none"  # Use 'none' for cross-origin requests (dev + production)
     SESSION_COOKIE_MAX_AGE: int = 7 * 24 * 3600  # 7 days in seconds
+    
+    # Development override - allow insecure cookies for local development
+    ALLOW_INSECURE_COOKIES: bool = os.getenv("ENVIRONMENT", "development") == "development"
     
     # Enhanced Security Settings
     MAX_CONCURRENT_SESSIONS: int = 5  # Default max sessions per user
     TOKEN_CLEANUP_INTERVAL_HOURS: int = 24  # How often to clean expired tokens
     SECURITY_LOG_RETENTION_DAYS: int = 90  # How long to keep security logs
-      # Device and Session Tracking
+    # Device and Session Tracking
     ENABLE_DEVICE_TRACKING: bool = True
     ENABLE_LOCATION_TRACKING: bool = False  # Disable for privacy in development
     SUSPICIOUS_ACTIVITY_THRESHOLD: int = 5  # Failed attempts before flagging

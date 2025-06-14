@@ -26,19 +26,18 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    try:
-        # Try to get token from Authorization header first
+    try:        # Try to get token from Authorization header first
         auth_header = request.headers.get("authorization")
         auth_token = None
         if auth_header and auth_header.startswith("Bearer "):
             auth_token = auth_header.split(" ")[1]
+            logger.info(f"Using auth header token: {auth_token[:20] + '...' if auth_token else 'None'}")
         
         # If no Authorization header, try to get from httpOnly cookie
         if not auth_token:
             auth_token = request.cookies.get("access_token")
             logger.info(f"No auth header, trying cookie: {auth_token[:20] + '...' if auth_token else 'None'}")
-        else:
-            logger.info(f"Using auth header token: {auth_token[:20] + '...' if auth_token else 'None'}")
+        
         
         if not auth_token:
             # Get client info for logging
@@ -115,24 +114,33 @@ async def get_current_user(
 
 
 async def get_current_user_from_cookie(request: Request, db: Session = Depends(get_db)) -> User:
-    """Get current authenticated user from cookie (for SSE)"""
+    """Get current authenticated user from cookie or Authorization header (for SSE)"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
     )
     
-    # Log available cookies for debugging
-    available_cookies = list(request.cookies.keys())
-    logger.info(f"SSE Auth - Available cookies: {available_cookies}")
+    # Try Authorization header first
+    auth_header = request.headers.get("authorization")
+    token = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        logger.info(f"SSE Auth - Using Authorization header token")
     
-    # Extract token from secure cookie
-    token = request.cookies.get("access_token")
-    logger.info(f"SSE Auth - Access token found: {bool(token)}")
-    if token:
-        logger.info(f"SSE Auth - Token preview: {token[:20]}...")
+    # If no Authorization header, try cookie
+    if not token:
+        # Log available cookies for debugging
+        available_cookies = list(request.cookies.keys())
+        logger.info(f"SSE Auth - Available cookies: {available_cookies}")
+        
+        # Extract token from secure cookie
+        token = request.cookies.get("access_token")
+        logger.info(f"SSE Auth - Access token found: {bool(token)}")
+        if token:
+            logger.info(f"SSE Auth - Token preview: {token[:20]}...")
     
     if not token:
-        logger.warning("SSE Auth - No access token found in cookies")
+        logger.warning("SSE Auth - No access token found in cookies or headers")
         raise credentials_exception
     
     # Verify token

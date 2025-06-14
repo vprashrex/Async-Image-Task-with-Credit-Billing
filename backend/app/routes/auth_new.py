@@ -161,15 +161,15 @@ async def login(
             location=client_info["location"],
             remember_me=remember_me
         )
-        
-        # Set secure authentication cookies
+          # Set secure authentication cookies
         set_authentication_cookies(
             response=response,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],
             session_id=token_data["session_id"],
             device_fingerprint=token_data["device_fingerprint"],
-            remember_me=remember_me
+            remember_me=remember_me,
+            request=request
         )
         
         logger.info(f"Successful login: {user.email} from {client_info['ip_address']}")
@@ -289,15 +289,15 @@ async def refresh_token(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired refresh token"
             )
-        
-        # Update secure cookies with new tokens
+          # Update secure cookies with new tokens
         set_authentication_cookies(
             response=response,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],
             session_id=session_info.get("session_id") if session_info else "",
             device_fingerprint=device_fingerprint or "",
-            remember_me=session_info.get("remember_me", False) if session_info else False
+            remember_me=session_info.get("remember_me", False) if session_info else False,
+            request=request
         )
         
         return token_data

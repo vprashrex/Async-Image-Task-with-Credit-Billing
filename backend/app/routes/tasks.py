@@ -15,6 +15,7 @@ from app.utils.redis_utils import RedisManager
 from app.utils.security import handle_service_error, validate_user_input, log_security_event
 from app.workers.image_processor import process_image_task
 from app.models.user import User
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ async def stream_task_updates(
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
-                "Access-Control-Allow-Origin": "http://localhost:3001",
+                "Access-Control-Allow-Origin": settings.BACKEND_CORS_ORIGINS,
                 "Access-Control-Allow-Credentials": "true",
                 "Access-Control-Allow-Headers": "Cache-Control, Accept",
                 "Access-Control-Allow-Methods": "GET",
@@ -119,7 +120,7 @@ async def stream_task_updates(
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "http://localhost:3001",
+            "Access-Control-Allow-Origin": settings.BACKEND_CORS_ORIGINS,
             "Access-Control-Allow-Credentials": "true", 
             "Access-Control-Allow-Headers": "Cache-Control, Accept",
             "Access-Control-Allow-Methods": "GET",
