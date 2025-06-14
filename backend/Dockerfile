@@ -26,17 +26,27 @@ RUN apk add --no-cache \
     libpng-dev \
     git \
     curl \
-    build-base
+    build-base \
+    file-dev \
+    libmagic
 
-# Install uv for faster Python package management
-RUN pip install uv
+# Download a specific version of the uv installer
+ADD https://astral.sh/uv/0.7.13/install.sh /uv-installer.sh
+
+# Run the installer then remove it
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+
+# Ensure the installed binary is on the PATH
+ENV PATH="/root/.local/bin:$PATH"
 
 # Copy dependency files
-COPY pyproject.toml uv.lock ./
 COPY requirements.txt ./
 
-# Install Python dependencies using uv
+# Install dependencies using uv with --system flag
 RUN uv pip install --system -r requirements.txt
+
+# Copy environment file and rename it
+COPY .env.docker .env
 
 # Copy alembic configuration
 COPY alembic.ini ./
