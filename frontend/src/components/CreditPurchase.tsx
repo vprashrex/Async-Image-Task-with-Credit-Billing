@@ -41,7 +41,8 @@ export function CreditPurchase({ onPurchaseComplete }: CreditPurchaseProps) {
 
     setIsLoading(true);
 
-    try {      // Create Razorpay order
+    try {      
+      // Create Razorpay order
       const orderData = await creditsApi.purchaseCredits({ amount: credits });
 
       // Check if Razorpay is loaded
