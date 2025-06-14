@@ -107,7 +107,7 @@ async def stream_task_updates(
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
-                "Access-Control-Allow-Origin": settings.BACKEND_CORS_ORIGINS,
+                "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": "true",
                 "Access-Control-Allow-Headers": "Cache-Control, Accept",
                 "Access-Control-Allow-Methods": "GET",
@@ -120,7 +120,7 @@ async def stream_task_updates(
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": settings.BACKEND_CORS_ORIGINS,
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Credentials": "true", 
             "Access-Control-Allow-Headers": "Cache-Control, Accept",
             "Access-Control-Allow-Methods": "GET",

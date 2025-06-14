@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # Redis for Celery broker and caching
+  redis:
+    image: redis:7-alpine
+    container_name: virtual-space-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - virtual-space-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # FastAPI Web Application
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-web
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres.ptxdkzyjrfbjioiptrbo:2NL28G8FgDKt6sfj@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+      
+      # JWT Security
+      JWT_SECRET: e4432889-98ee-4a5d-8f42-b0fafed2ba43
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      REFRESH_TOKEN_EXPIRE_DAYS_REMEMBER: 30
+      
+      # Redis & Celery
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+            
+      # CORS
+      BACKEND_CORS_ORIGINS: ["https://async-image-task-with-credit-billin.vercel.app"]
+      
+      # Razorpay
+      RAZORPAY_KEY_ID: rzp_test_jPhb0aDlW7BoGi
+      RAZORPAY_KEY_SECRET: kUbzP0hDZVyDG3Dv1moOIG9a
+      RAZORPAY_WEBHOOK_SECRET: webhooksecret
+
+    volumes:
+      - ./uploads:/app/uploads
+      - ./app:/app/app:ro  # Mount for development (remove in production)
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        python setup_database.py &&
+        alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Celery Worker for async image processing
+  celery-worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-celery-worker
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres.ptxdkzyjrfbjioiptrbo:2NL28G8FgDKt6sfj@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+      
+      # Redis & Celery
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      
+      # JWT (needed for some operations)
+      JWT_SECRET: e4432889-98ee-4a5d-8f42-b0fafed2ba43
+      JWT_ALGORITHM: HS256
+      
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+
+  # Celery Beat (for scheduled tasks)
+  celery-beat:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-celery-beat
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres.ptxdkzyjrfbjioiptrbo:2NL28G8FgDKt6sfj@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+      
+      # Redis & Celery
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      
+      # JWT
+      JWT_SECRET: e4432889-98ee-4a5d-8f42-b0fafed2ba43
+      JWT_ALGORITHM: HS256
+      
+    depends_on:
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: celery -A app.celery_app beat --loglevel=info
+
+# Volumes for persistent data
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# Network for service communication
+networks:
+  virtual-space-network:
+    driver: bridge

@@ -9,20 +9,30 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL")    # JWT - Enhanced security validation
+    DATABASE_URL: str = os.getenv("DATABASE_URL")  # JWT - Enhanced security validation
     JWT_SECRET: str = Field(default=os.getenv("JWT_SECRET", ""), min_length=32)
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # Reduced to 15 minutes for security
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # Default refresh token expiry
-    REFRESH_TOKEN_EXPIRE_DAYS_REMEMBER: int = 30  # Remember me expiry
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv(
+        "ACCESS_TOKEN_EXPIRE_MINUTES", 15
+    )  # Reduced to 15 minutes for security
+    REFRESH_TOKEN_EXPIRE_DAYS: int = os.getenv(
+        "REFRESH_TOKEN_EXPIRE_DAYS", 7
+    )  # Default refresh token expiry
+    REFRESH_TOKEN_EXPIRE_DAYS_REMEMBER: int = os.getenv(
+        "REFRESH_TOKEN_EXPIRE_DAYS_REMEMBER", 30
+    )  # Remember me expiry
 
     # Razorpay - Enhanced security validation
-    #RAZORPAY_KEY_ID: str = Field(default=os.getenv("RAZORPAY_KEY_ID", ""), min_length=1)
     RAZORPAY_KEY_ID: str = Field(default=os.getenv("RAZORPAY_KEY_ID", ""), min_length=1)
+    RAZORPAY_KEY_SECRET: str = Field(
+        default=os.getenv("RAZORPAY_KEY_SECRET", ""), min_length=10
+    )
+    RAZORPAY_WEBHOOK_SECRET: str = Field(
+        default=os.getenv("RAZORPAY_WEBHOOK_SECRET", ""), min_length=10
+    )
+    # WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""), min_length=20)
+    WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""))
 
-
-    RAZORPAY_KEY_SECRET: str = Field(default=os.getenv("RAZORPAY_KEY_SECRET", ""), min_length=10)
-    RAZORPAY_WEBHOOK_SECRET: str = Field(default=os.getenv("RAZORPAY_WEBHOOK_SECRET", ""), min_length=10)
 
     # Redis & Celery
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -30,29 +40,45 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = os.getenv(
         "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
     )
+
+    # Some other settings
     UPLOAD_DIR: str = "./uploads"
     MAX_FILE_SIZE: int = 10485760  # 10MB
     ALLOWED_EXTENSIONS: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
-    ALLOWED_MIME_TYPES: List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]    # App Settings
+    ALLOWED_MIME_TYPES: List[str] = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+    ]  # App Settings
     DEBUG: bool = False  # Default to production mode
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")  # Add environment detection
+    
+    
+    ENVIRONMENT: str = os.getenv(
+        "ENVIRONMENT", "development"
+    )  # Add environment detection
     API_V1_STR: str = "/api/v1"
-    PROJECT_NAME: str = "Virtual Space Tech Backend"    # CORS - More restrictive defaults
-    BACKEND_CORS_ORIGINS: List[str] = os.getenv('BACKEND_CORS_ORIGINS')
+    PROJECT_NAME: str = "Virtual Space Tech Backend"  # CORS - More restrictive defaults
+    
+    BACKEND_CORS_ORIGINS: List[str] = os.getenv("BACKEND_CORS_ORIGINS")
 
     # Security Settings
-    #WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""), min_length=20)
-    WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""))
 
     # Session Security - Environment-aware settings for cross-origin support
-    SESSION_COOKIE_SECURE: bool = os.getenv("ENVIRONMENT", "development") == "production"
+    SESSION_COOKIE_SECURE: bool = (
+        os.getenv("ENVIRONMENT", "development") == "production"
+    )
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SAMESITE: str = "none"  # Use 'none' for cross-origin requests (dev + production)
+    SESSION_COOKIE_SAMESITE: str = (
+        "none"  # Use 'none' for cross-origin requests (dev + production)
+    )
     SESSION_COOKIE_MAX_AGE: int = 7 * 24 * 3600  # 7 days in seconds
-    
+
     # Development override - allow insecure cookies for local development
-    ALLOW_INSECURE_COOKIES: bool = os.getenv("ENVIRONMENT", "development") == "development"
-    
+    ALLOW_INSECURE_COOKIES: bool = (
+        os.getenv("ENVIRONMENT", "development") == "development"
+    )
+
     # Enhanced Security Settings
     MAX_CONCURRENT_SESSIONS: int = 5  # Default max sessions per user
     TOKEN_CLEANUP_INTERVAL_HOURS: int = 24  # How often to clean expired tokens
@@ -62,16 +88,16 @@ class Settings(BaseSettings):
     ENABLE_LOCATION_TRACKING: bool = False  # Disable for privacy in development
     SUSPICIOUS_ACTIVITY_THRESHOLD: int = 5  # Failed attempts before flagging
 
-    @validator('JWT_SECRET')
+    @validator("JWT_SECRET")
     def validate_jwt_secret(cls, v):
         if not v or len(v) < 32:
-            raise ValueError('JWT_SECRET must be at least 32 characters long')
+            raise ValueError("JWT_SECRET must be at least 32 characters long")
         return v
 
-    @validator('RAZORPAY_KEY_SECRET')
+    @validator("RAZORPAY_KEY_SECRET")
     def validate_razorpay_secret(cls, v):
         if not v or len(v) < 10:
-            raise ValueError('RAZORPAY_KEY_SECRET must be at least 10 characters long')
+            raise ValueError("RAZORPAY_KEY_SECRET must be at least 10 characters long")
         return v
 
     # @validator('WEBHOOK_SHARED_SECRET')
