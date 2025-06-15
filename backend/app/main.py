@@ -16,14 +16,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# try:
-#     # Try to setup database using Alembic migrations
-#     from app.utils.database_setup import setup_database
-#     setup_database()
-#     logger.info("✅ Database setup completed using Alembic")
-# except Exception as e:
-#     logger.error(f"⚠️  Database setup failed: {e}")
-#     logger.error("📝 Please check your DATABASE_URL and ensure PostgreSQL is running")
+try:
+    # Try to setup database using Alembic migrations
+    from app.utils.database_setup import setup_database
+    setup_database()
+    logger.info("✅ Database setup completed using Alembic")
+except Exception as e:
+    logger.error(f"⚠️  Database setup failed: {e}")
+    logger.error("📝 Please check your DATABASE_URL and ensure PostgreSQL is running")
 
 # Create FastAPI app
 app = FastAPI(

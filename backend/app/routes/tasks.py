@@ -139,6 +139,7 @@ async def create_task(
 ):
     """Submit a new image processing task"""
     try:
+        print(f"Creating task for user {current_user.id} with operation {processing_operation}")
         # Validate and sanitize inputs
         title = validate_user_input(title, "title", 200)
         if description:
@@ -178,6 +179,7 @@ async def create_task(
         celery_task = process_image_task.delay(
             task.id, 
             image_path, 
+            current_user.id,
             {"operation": processing_operation}
         )
         

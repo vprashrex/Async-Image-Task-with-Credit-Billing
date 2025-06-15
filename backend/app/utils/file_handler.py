@@ -163,6 +163,9 @@ def save_file(file: UploadFile, subfolder: str = "images") -> str:
 
 def get_file_url(file_path: Optional[str], base_url: str = "http://localhost:8000") -> Optional[str]:
     """Convert file path to URL"""
+    
+    base_url = settings.SERVER_URI
+    
     if not file_path:
         return None
     

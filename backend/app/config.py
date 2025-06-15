@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     ENABLE_LOCATION_TRACKING: bool = False
     SUSPICIOUS_ACTIVITY_THRESHOLD: int = 5
 
+    SERVER_URI:str = os.getenv('SERVER_URI','http://localhost:8000')
+
     @property
     def BACKEND_CORS_ORIGINS(self) -> List[str]:
         """Dynamically determine CORS origins based on environment"""
