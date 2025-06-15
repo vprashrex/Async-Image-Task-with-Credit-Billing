@@ -65,10 +65,23 @@ class Settings(BaseSettings):
     ENABLE_LOCATION_TRACKING: bool = False
     SUSPICIOUS_ACTIVITY_THRESHOLD: int = 5
 
-    BACKEND_CORS_ORIGINS: List[str] = ["https://async-image-task-with-credit-billin.vercel.app"] if ENVIRONMENT == "production" else ["http://localhost:3001"]
-    SESSION_COOKIE_SECURE: bool = True if ENVIRONMENT == "production" else False
-    SESSION_COOKIE_SAMESITE: str = "none" if ENVIRONMENT == "production" else "lax"
-
+    @property
+    def BACKEND_CORS_ORIGINS(self) -> List[str]:
+        """Dynamically determine CORS origins based on environment"""
+        if self.ENVIRONMENT == "production":
+            return ["https://async-image-task-with-credit-billin.vercel.app"]
+        else:
+            return ["http://localhost:3001"]
+    
+    @property
+    def SESSION_COOKIE_SECURE(self) -> bool:
+        """Dynamically determine cookie security based on environment"""
+        return self.ENVIRONMENT == "production"
+    
+    @property
+    def SESSION_COOKIE_SAMESITE(self) -> str:
+        """Dynamically determine SameSite setting based on environment"""
+        return "none" if self.ENVIRONMENT == "production" else "lax"
 
     @validator("JWT_SECRET")
     def validate_jwt_secret(cls, v):
@@ -90,7 +103,7 @@ class Settings(BaseSettings):
 # Create settings instance
 settings = Settings()
 
-# Print the actual values
+# Print the actual values for debugging
 print(f"Environment: {settings.ENVIRONMENT}")
 print(f"Using CORS origins: {settings.BACKEND_CORS_ORIGINS}")
 print(f"Using SESSION_COOKIE_SECURE: {settings.SESSION_COOKIE_SECURE}")
