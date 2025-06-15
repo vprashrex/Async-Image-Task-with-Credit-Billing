@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Redis for Celery broker and caching
+  redis:
+    image: redis:7-alpine
+    container_name: virtual-space-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - virtual-space-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # FastAPI Web Application
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-web
+    volumes:
+      - ./uploads:/app/uploads
+      - ./app:/app/app:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        python setup_database.py &&
+        alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Celery Worker
+  celery-worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-celery-worker
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+
+  # Celery Beat
+  celery-beat:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtual-space-celery-beat
+    depends_on:
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - virtual-space-network
+    restart: unless-stopped
+    command: celery -A app.celery_app beat --loglevel=info
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  virtual-space-network:
+    driver: bridge
