@@ -1,0 +1,7 @@
+backend = https://6cb0-2a04-3543-1000-2310-687b-63ff-fe3f-4d89.ngrok-free.app
+
+pm2 start "uv run celery -A app.celery_app worker --loglevel=info --concurrency=2" --name celeryWorker
+
+docker run --name postgres-db   -e POSTGRES_USER=admin   -e POSTGRES_PASSWORD=123   -e POSTGRES_DB=virtualspace   -p 5432:5432   -v postgres_data:/var/lib/postgresql/data   -d postgres:15
+
+postgresql://postgres.zcwpyptunacxtuzgslkf:TJnTSj8tF9hZXcX8@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres

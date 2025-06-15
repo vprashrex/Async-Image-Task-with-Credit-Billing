@@ -2,6 +2,19 @@
 
 A production-ready backend built with **FastAPI** for secure and scalable **asynchronous image processing**, featuring:
 
+Demo Video: [Watch Video](https://drive.google.com/file/d/1om_e_TbYzFDjZDeXOIrTQS4wWvI9XRFI/view?usp=drive_link)
+
+## Screenshots
+![alt text](./screenshots/image.png)
+![alt text](./screenshots/image2.png)
+![alt text](./screenshots/image3.png)
+![alt text](./screenshots/image4.png)
+![alt text](./screenshots/image-0.png)
+![alt text](./screenshots/image-1.png)
+![alt text](./screenshots/image-2.png)
+![alt text](./screenshots/image-3.png)
+![alt text](./screenshots/image-4.png)
+
 * 🔐 JWT-based authentication
 * 💳 Razorpay payments
 * 🐇 Celery workers
