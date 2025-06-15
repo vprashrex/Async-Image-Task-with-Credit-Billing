@@ -53,14 +53,35 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv(
         "ENVIRONMENT", "development"
     )  # Add environment detection
+
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Virtual Space Tech Backend"  # CORS - More restrictive defaults
-    BACKEND_CORS_ORIGINS: List[str] = ['http://localhost:3001']
+    
+    @property
+    def BACKEND_CORS_ORIGINS(self) -> List[str]:
+        if self.ENVIRONMENT == "production":
+            return [
+                "https://async-image-task-with-credit-billin.vercel.app"
+            ]
+        return ["http://localhost:3001"]
+
+    print(f"Using CORS origins: {BACKEND_CORS_ORIGINS}")    
 
     # Session Security - Development-friendly settings
-    SESSION_COOKIE_SECURE: bool = False  # Set to False for HTTP in development
+    @property
+    def SESSION_COOKIE_SECURE(self) -> bool:
+        return self.ENVIRONMENT == "production"
+    
+    print(f"Using SESSION_COOKIE_SECURE: {SESSION_COOKIE_SECURE}")
+
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SAMESITE: str = "lax"  # 'lax' for development, 'strict' for production
+    
+    @property
+    def SESSION_COOKIE_SAMESITE(self) -> str:
+        return "none" if self.ENVIRONMENT == "production" else "lax"
+    
+    print(f"Using SESSION_COOKIE_SAMESITE: {SESSION_COOKIE_SAMESITE}")
+
     SESSION_COOKIE_MAX_AGE: int = 7 * 24 * 3600  # 7 days in seconds
 
     # Enhanced Security Settings
