@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import React from 'react';
 
 interface AccessibilityConfig {
   enableAnnouncements?: boolean;
@@ -14,7 +15,7 @@ export function useAccessibility(config: AccessibilityConfig = {}) {
     enableAnnouncements = true,
     enableKeyboardNavigation = true,
     enableFocusManagement = true,
-    enableAriaLabels = true,
+    // Remove unused variable to fix ESLint warning
   } = config;
 
   useEffect(() => {
@@ -204,7 +205,7 @@ export function AccessibleField({
         'aria-describedby': ariaDescribedBy,
         'aria-invalid': error ? 'true' : undefined,
         'aria-required': required,
-      })}
+      } as any)}
       
       {error && (
         <p id={errorId} role="alert" className="text-sm text-destructive">

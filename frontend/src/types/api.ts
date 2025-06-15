@@ -26,10 +26,26 @@ export interface Task {
   completed_at?: string;
 }
 
+export interface TaskCreateRequest {
+  title: string;
+  description?: string;
+  processing_operation: string;
+}
 export interface CreditBalance {
   user_id: number;
   credits: number;
   email: string;
+}
+
+export interface CreditPurchaseRequest {
+  credits: number;
+}
+
+export interface CreditPurchaseResponse {
+  order_id: string;
+  amount: number;
+  currency: string;
+  key: string;
 }
 
 export interface LoginRequest {
