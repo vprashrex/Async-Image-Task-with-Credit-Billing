@@ -37,12 +37,35 @@ app = FastAPI(
 
 
 # Add CORS middleware
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=settings.BACKEND_CORS_ORIGINS,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "Cookie",
+        "Set-Cookie",
+        "Access-Control-Allow-Credentials",
+        "Access-Control-Allow-Origin",
+    ],
+    expose_headers=[
+        "Set-Cookie",
+        "Access-Control-Allow-Credentials",
+        "Access-Control-Allow-Origin",
+    ]
 )
 
 # Mount static files for serving uploaded images

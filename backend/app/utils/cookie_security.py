@@ -99,7 +99,7 @@ def set_authentication_cookies(
         value=access_token,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         httponly=True,
-        secure=False,  # False for development HTTP
+        secure=settings.SESSION_COOKIE_SECURE,  # False for development HTTP
         samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
         path="/",
         domain=None
@@ -111,7 +111,7 @@ def set_authentication_cookies(
         value=refresh_token,
         max_age=refresh_max_age,
         httponly=True,
-        secure=False,  # False for development HTTP
+        secure=settings.SESSION_COOKIE_SECURE,  # False for development HTTP
         samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
         path="/",  # Allow access from all paths
         domain=None  # Use default domain
@@ -130,13 +130,29 @@ def set_authentication_cookies(
         value=signed_session,
         max_age=refresh_max_age,
         httponly=False,  # Readable by client for UI purposes
-        secure=False,  # False for development HTTP
+        secure=settings.SESSION_COOKIE_SECURE,  # False for development HTTP
         samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
         path="/",
         domain=None  # Use default domain
     )
+
+    # CRUCIAL: Add explicit Set-Cookie headers for cross-origin
+    cookie_headers = [
+        f"access_token={access_token}; Max-Age={settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60}; Path=/; HttpOnly; Secure; SameSite=None",
+        f"refresh_token={refresh_token}; Max-Age={refresh_max_age}; Path=/; HttpOnly; Secure; SameSite=None",
+        f"session_info={signed_session}; Max-Age={refresh_max_age}; Path=/; Secure; SameSite=None"
+    ]
+
+    # Set multiple Set-Cookie headers
+    response.headers["Set-Cookie"] = "; ".join(cookie_headers)
+    
+    # Also add CORS headers explicitly
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Origin"] = "https://async-image-task-with-credit-billin.vercel.app"
+
     
     logger.info(f"Set authentication cookies for session: {session_id}")
+    logger.info(f"Cookie headers: {cookie_headers}")
 
 
 def clear_authentication_cookies(response: Response) -> None:
