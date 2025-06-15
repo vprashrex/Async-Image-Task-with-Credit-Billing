@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     )  # Add environment detection
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Virtual Space Tech Backend"  # CORS - More restrictive defaults
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    BACKEND_CORS_ORIGINS: List[str] = os.getenv('BACKEND_CORS_ORIGINS', '*')
 
     # Security Settings
     # WEBHOOK_SHARED_SECRET: str = Field(default=os.getenv("WEBHOOK_SHARED_SECRET", ""), min_length=20)

@@ -5,14 +5,11 @@ from app.database import get_db
 from app.schemas.user import UserCreate, UserResponse, Token, RefreshTokenRequest
 from app.services.user_service import UserService
 from app.services.token_service import TokenService
-from app.utils.auth import create_access_token
 from app.utils.security import validate_user_input, log_security_event, handle_service_error
 from app.utils.client_info import get_client_info
 from app.utils.cookie_security import set_authentication_cookies, clear_authentication_cookies, extract_session_info
 from app.dependencies import get_current_user, get_current_user_from_cookie
 from app.models.user import User
-from app.models.token import UserSession
-from app.config import settings
 import logging
 import json
 from typing import Dict, Any

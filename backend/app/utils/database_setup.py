@@ -20,21 +20,41 @@ def run_alembic_migrations():
     try:
         print("🚀 Running Alembic migrations...")
         
-        # Run alembic upgrade head
-        result = subprocess.run(
-            ["alembic", "upgrade", "head"],
-            capture_output=True,
-            text=True,
-            cwd=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        )
+        # Set the working directory to the project root
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         
-        if result.returncode == 0:
-            print("✅ Alembic migrations completed successfully!")
-            print(result.stdout)
-            return True
-        else:
-            print(f"❌ Alembic migration failed: {result.stderr}")
-            return False
+        # Try different alembic commands in order of preference
+        alembic_commands = [
+            ["python", "-m", "alembic", "upgrade", "head"],
+            ["alembic", "upgrade", "head"],
+            ["/root/.local/bin/alembic", "upgrade", "head"]
+        ]
+        
+        for cmd in alembic_commands:
+            try:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    cwd=project_root,
+                    timeout=60  # Add timeout to prevent hanging
+                )
+                
+                if result.returncode == 0:
+                    print("✅ Alembic migrations completed successfully!")
+                    if result.stdout:
+                        print(result.stdout)
+                    return True
+                else:
+                    print(f"⚠️  Command {' '.join(cmd)} failed: {result.stderr}")
+                    continue
+                    
+            except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+                print(f"⚠️  Command {' '.join(cmd)} not available or timed out: {e}")
+                continue
+                
+        print("❌ All Alembic commands failed")
+        return False
             
     except Exception as e:
         print(f"❌ Error running Alembic migrations: {e}")
