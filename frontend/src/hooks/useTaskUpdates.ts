@@ -24,20 +24,9 @@ export function useTaskUpdates({ onTaskUpdate, enabled = true }: UseTaskUpdatesP
       return;
     }
 
-    // Check if token exists in cookies (EventSource will automatically send cookies)
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('session_info='))
-      ?.split('=')[1];
-
-    if (!token) {
-      console.warn('No auth token found for SSE connection');
-      console.log('Available cookies:', document.cookie);
-      return;
-    }
-    
-
-    console.log('🔥 SSE connecting with token:', token.substring(0, 20) + '...');
+    // Remove token checking since EventSource will send cookies automatically
+    console.log('🔥 SSE connecting with cookies');
+    console.log('Available cookies:', document.cookie);
 
     setConnectionStatus('connecting');
     
@@ -46,7 +35,7 @@ export function useTaskUpdates({ onTaskUpdate, enabled = true }: UseTaskUpdatesP
       const url = `${apiUrl}/tasks/stream`;
       console.log('🔥 Attempting to connect to SSE:', url);
       
-      // EventSource automatically sends cookies, so no need to pass token as query param
+      // EventSource automatically sends cookies with withCredentials: true
       const eventSource = new EventSource(url, {
         withCredentials: true,
       });
