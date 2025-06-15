@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     # Session Security
     SESSION_COOKIE_SECURE: bool = False
     SESSION_COOKIE_HTTPONLY: bool = True
-    SESSION_COOKIE_SAMESITE: str = "lax"
+    SESSION_COOKIE_SAMESITE: str = "none" if ENVIRONMENT == 'development' else "lax"
     SESSION_COOKIE_MAX_AGE: int = 7 * 24 * 3600  # 7 days
 
     # Enhanced Security Settings

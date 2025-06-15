@@ -100,8 +100,9 @@ def set_authentication_cookies(
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         httponly=True,
         secure=False,  # False for development HTTP
-        samesite="lax",  # Lax for development
-        path="/"
+        samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
+        path="/",
+        domain=None
     )
       # Refresh token in httpOnly cookie
     refresh_max_age = (30 * 24 * 3600) if remember_me else (7 * 24 * 3600)
@@ -111,8 +112,9 @@ def set_authentication_cookies(
         max_age=refresh_max_age,
         httponly=True,
         secure=False,  # False for development HTTP
-        samesite="lax",  # Lax for development
-        path="/"  # Allow access from all paths
+        samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
+        path="/",  # Allow access from all paths
+        domain=None  # Use default domain
     )
     
     # Session metadata in signed cookie (readable by client)
@@ -129,8 +131,9 @@ def set_authentication_cookies(
         max_age=refresh_max_age,
         httponly=False,  # Readable by client for UI purposes
         secure=False,  # False for development HTTP
-        samesite="lax",  # Lax for development
-        path="/"
+        samesite=settings.SESSION_COOKIE_SAMESITE,  # Lax for development
+        path="/",
+        domain=None  # Use default domain
     )
     
     logger.info(f"Set authentication cookies for session: {session_id}")
@@ -152,7 +155,7 @@ def clear_authentication_cookies(response: Response) -> None:
             key=cookie_name,
             path="/",
             secure=False,  # False for development HTTP
-            samesite="lax"
+            samesite=settings.SESSION_COOKIE_SAMESITE  # Lax for development
         )
         
         # Also clear with different paths
@@ -161,7 +164,7 @@ def clear_authentication_cookies(response: Response) -> None:
                 key=cookie_name,
                 path="/auth",
                 secure=False,
-                samesite="lax"
+                samesite=settings.SESSION_COOKIE_SAMESITE  # Lax for development
             )
     
     logger.info("Cleared all authentication cookies")
