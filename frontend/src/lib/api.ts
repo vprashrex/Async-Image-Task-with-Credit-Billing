@@ -8,7 +8,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Enable cookies for refresh token
+  withCredentials: true, // Enable cookies
 });
 
 // Flag to prevent multiple refresh attempts
@@ -71,9 +71,12 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token using httpOnly cookies
         const response = await axios.post(`${API_URL}/auth/refresh`, {
-          // No need to send refresh_token in body, it's in httpOnly cookie
+          refresh_token: undefined // Let server use httpOnly cookie
         }, {
-          withCredentials: true
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
 
         // The server will update the httpOnly cookies automatically
